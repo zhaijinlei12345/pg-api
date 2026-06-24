@@ -1,11 +1,12 @@
 const { Pool } = require('pg');
+const config = require('./config');
 
 const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'testdb',
-  user: process.env.DB_USER || 'zhaijinlei',
-  password: process.env.DB_PASSWORD || '',
+  host: config.db.host,
+  port: config.db.port,
+  database: config.db.database,
+  user: config.db.user,
+  password: config.db.password,
 });
 
 // 记录所有 SQL 查询

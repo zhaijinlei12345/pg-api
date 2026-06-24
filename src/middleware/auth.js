@@ -1,24 +1,24 @@
-const jwt = require('jsonwebtoken');
+const { verifyToken } = require('../utils/jwt');
+const { UnauthorizedError } = require('../errors/AppError');
 
 /**
  * JWT 认证中间件
  * 从 Authorization: Bearer <token> 中提取并验证 JWT
  */
-function authenticate(req, res, next) {
+function authenticate(req, _res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, message: '未提供认证令牌' });
+    return next(new UnauthorizedError('未提供认证令牌'));
   }
 
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // { id, email, iat, exp }
+    req.user = verifyToken(token); // { id, email, role, iat, exp }
     next();
-  } catch (err) {
-    return res.status(401).json({ success: false, message: '令牌无效或已过期' });
+  } catch (_err) {
+    next(new UnauthorizedError('令牌无效或已过期'));
   }
 }
 

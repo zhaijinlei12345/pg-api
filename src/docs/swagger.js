@@ -10,7 +10,7 @@ const swaggerDefinition = {
     description: '基于 Express + PostgreSQL 的 RESTful API，提供 users 表的 CRUD 及认证功能',
   },
   servers: [
-    { url: 'http://localhost:3000', description: '本地开发服务器' },
+    { url: 'http://localhost:3000/api/v1', description: 'API v1' },
   ],
   components: {
     securitySchemes: {
@@ -44,6 +44,7 @@ const swaggerDefinition = {
   tags: [
     { name: 'Auth', description: '认证接口 — 注册 & 登录' },
     { name: 'Users', description: '用户 CRUD 接口' },
+    { name: 'AuditLogs', description: '操作日志（仅管理员）' },
   ],
 };
 
