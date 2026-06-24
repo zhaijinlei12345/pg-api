@@ -132,6 +132,6 @@ INSERT INTO dict_entries (type_code, key, label, color, sort_order) VALUES
 
 -- 种子管理员
 INSERT INTO users (name, email, password, role) VALUES
-  ('管理员', 'admin@admin.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin')
+  ('管理员', 'admin@admin.com', '$2b$10$V0v1AwU2vTQkPYi4rO8Q/.t3iKK5GPBJ7kjU4BdkKT0jvPgXos5JC', 'admin')
   ON CONFLICT (email) DO NOTHING;
 -- 密码: 123456 (bcrypt hash)
