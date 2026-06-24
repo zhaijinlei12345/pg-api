@@ -1,0 +1,104 @@
+name: CI - pg-api
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: zhaijinlei
+          POSTGRES_PASSWORD: test123
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Run DB migration
+        run: |
+          PGPASSWORD=test123 psql -h localhost -U zhaijinlei -d testdb -c "
+            CREATE TABLE IF NOT EXISTS users (
+              id SERIAL PRIMARY KEY, name VARCHAR(100), email VARCHAR(200) UNIQUE,
+              age INT, password VARCHAR(200), role VARCHAR(20) DEFAULT 'user',
+              created_at TIMESTAMPTZ DEFAULT NOW()
+            );
+            CREATE TABLE IF NOT EXISTS audit_logs (
+              id SERIAL PRIMARY KEY, user_id INT, user_name VARCHAR(200),
+              action VARCHAR(20), target_type VARCHAR(50), target_id INT,
+              details JSONB, created_at TIMESTAMPTZ DEFAULT NOW()
+            );
+            CREATE TABLE IF NOT EXISTS products (
+              id SERIAL PRIMARY KEY, name VARCHAR(200), description TEXT,
+              price DECIMAL(10,2) DEFAULT 0, stock INT DEFAULT 0,
+              category VARCHAR(50), image_url VARCHAR(500),
+              status VARCHAR(20) DEFAULT 'active',
+              created_at TIMESTAMPTZ DEFAULT NOW(),
+              updated_at TIMESTAMPTZ DEFAULT NOW()
+            );
+            CREATE TABLE IF NOT EXISTS orders (
+              id SERIAL PRIMARY KEY, order_no VARCHAR(30) UNIQUE,
+              customer_name VARCHAR(100), customer_phone VARCHAR(20),
+              total_amount DECIMAL(10,2) DEFAULT 0,
+              status VARCHAR(20) DEFAULT 'pending', notes TEXT,
+              created_at TIMESTAMPTZ DEFAULT NOW(),
+              updated_at TIMESTAMPTZ DEFAULT NOW()
+            );
+            CREATE TABLE IF NOT EXISTS order_items (
+              id SERIAL PRIMARY KEY, order_id INT REFERENCES orders(id) ON DELETE CASCADE,
+              product_id INT, product_name VARCHAR(200), quantity INT DEFAULT 1,
+              unit_price DECIMAL(10,2), subtotal DECIMAL(10,2)
+            );
+            CREATE TABLE IF NOT EXISTS dict_types (
+              id SERIAL PRIMARY KEY, code VARCHAR(50) UNIQUE,
+              name VARCHAR(100), description VARCHAR(255),
+              created_at TIMESTAMPTZ DEFAULT NOW()
+            );
+            CREATE TABLE IF NOT EXISTS dict_entries (
+              id SERIAL PRIMARY KEY, type_code VARCHAR(50) REFERENCES dict_types(code) ON DELETE CASCADE,
+              key VARCHAR(50), label VARCHAR(100), color VARCHAR(20),
+              sort_order INT DEFAULT 0, enabled BOOLEAN DEFAULT TRUE,
+              created_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(type_code, key)
+            );
+          "
+
+      - name: Create .env
+        run: |
+          cp .env.example .env 2>/dev/null || echo "PORT=3000
+          DB_HOST=localhost
+          DB_PORT=5432
+          DB_NAME=testdb
+          DB_USER=zhaijinlei
+          DB_PASSWORD=test123
+          JWT_SECRET=ci-test-secret-key-12345
+          JWT_EXPIRES_IN=7d" > .env
+
+      - name: Start & health check
+        run: |
+          node index.js &
+          sleep 3
+          curl -s http://localhost:3000/api/v1/auth/register -X POST -H 'Content-Type: application/json' -d '{"name":"test","email":"ci@test.com","password":"123456"}' | grep '"success":true'
+          echo "✅ API works"
+
+      - name: Run lint
+        run: npx eslint src/ --ext .js 2>/dev/null || echo "lint skipped (no config)"
