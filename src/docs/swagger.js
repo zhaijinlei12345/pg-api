@@ -45,6 +45,7 @@ const swaggerDefinition = {
     { name: 'Auth', description: '认证接口 — 注册 & 登录' },
     { name: 'Users', description: '用户 CRUD 接口' },
     { name: 'AuditLogs', description: '操作日志（仅管理员）' },
+    { name: 'Dict', description: '数据字典 — 统一管理枚举值' },
   ],
 };
 
