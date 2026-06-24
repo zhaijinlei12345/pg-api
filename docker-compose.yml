@@ -37,9 +37,19 @@ services:
 
   frontend:
     build: ../pg-frontend
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:alpine
     ports:
       - "80:80"
+      # - "443:443"   # HTTPS 开通后取消注释
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # - ./nginx/certs:/etc/nginx/certs:ro   # SSL 证书目录
     depends_on:
+      - frontend
       - backend
 
 volumes:
