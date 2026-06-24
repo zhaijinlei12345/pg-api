@@ -30,4 +30,24 @@ async function getMe(req, res, next) {
   }
 }
 
-module.exports = { register, login, getMe };
+async function changePassword(req, res, next) {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const result = await authService.changePassword(req.user.id, oldPassword, newPassword);
+    return success(res, result, '密码修改成功');
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function updateProfile(req, res, next) {
+  try {
+    const { name, email, age } = req.body;
+    const result = await authService.updateProfile(req.user.id, { name, email, age });
+    return success(res, result, '个人信息更新成功');
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { register, login, getMe, changePassword, updateProfile };

@@ -35,8 +35,9 @@ function createApp() {
   // ---------- API v1 ----------
   app.use('/api/v1', routes);
 
-  // 向后兼容：旧 /api/* 重定向到 v1
-  app.use('/api', (_req, res) => {
+  // 向后兼容：旧 /api/* （非v1）重定向到 v1
+  app.use('/api', (req, res, next) => {
+    if (req.path.startsWith('/v1')) return next(); // 已经由 /api/v1 处理过的放行
     res.status(301).json({ message: '请使用 /api/v1', docs: '/api-docs' });
   });
 

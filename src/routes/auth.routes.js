@@ -105,4 +105,80 @@ router.post(
  */
 router.get('/me', authenticate, authController.getMe);
 
+/**
+ * @swagger
+ * /api/v1/auth/password:
+ *   put:
+ *     tags: [Auth]
+ *     summary: 修改密码
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [oldPassword, newPassword]
+ *             properties:
+ *               oldPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 6
+ *     responses:
+ *       200:
+ *         description: 密码修改成功
+ *       401:
+ *         description: 原密码错误
+ */
+router.put(
+  '/password',
+  authenticate,
+  [
+    body('oldPassword').notEmpty().withMessage('请输入原密码'),
+    body('newPassword').isLength({ min: 6 }).withMessage('新密码至少6位'),
+    validate,
+  ],
+  authController.changePassword
+);
+
+/**
+ * @swagger
+ * /api/v1/auth/profile:
+ *   put:
+ *     tags: [Auth]
+ *     summary: 更新个人信息
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               age:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: 更新成功，返回用户信息和新的 JWT
+ */
+router.put(
+  '/profile',
+  authenticate,
+  [
+    body('name').optional().notEmpty().withMessage('姓名不能为空'),
+    body('email').optional().isEmail().withMessage('邮箱格式不正确'),
+    body('age').optional().isInt({ min: 0, max: 200 }).withMessage('年龄须在 0-200'),
+    validate,
+  ],
+  authController.updateProfile
+);
+
 module.exports = router;
