@@ -2,9 +2,9 @@ const express = require('express');
 const { body, query, param } = require('express-validator');
 const { validate } = require('../middleware/validate');
 const { authenticate } = require('../middleware/auth');
-const { requireRole } = require('../middleware/requireRole');
+const { requirePermission } = require('../middleware/requirePermission');
 const productController = require('../controllers/product.controller');
-const { ROLES } = require('../constants');
+const { PERMISSIONS } = require('../constants');
 
 const router = express.Router();
 
@@ -39,7 +39,7 @@ router.get('/:id', productController.getById);
 router.post(
   '/',
   authenticate,
-  requireRole(ROLES.ADMIN, ROLES.LEADER),
+  requirePermission(PERMISSIONS.PRODUCTS.WRITE),
   [
     body('name').notEmpty().withMessage('商品名不能为空'),
     body('price').isFloat({ min: 0 }).withMessage('价格须大于0'),
@@ -52,14 +52,14 @@ router.post(
 router.put(
   '/:id',
   authenticate,
-  requireRole(ROLES.ADMIN, ROLES.LEADER),
+  requirePermission(PERMISSIONS.PRODUCTS.WRITE),
   productController.update
 );
 
 router.delete(
   '/:id',
   authenticate,
-  requireRole(ROLES.ADMIN),
+  requirePermission(PERMISSIONS.PRODUCTS.DELETE),
   productController.remove
 );
 

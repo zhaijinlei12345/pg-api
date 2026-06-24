@@ -144,4 +144,23 @@ async function updateProfile(userId, { name, email, age }) {
   return { user: updated, token };
 }
 
-module.exports = { register, login, getMe, changePassword, updateProfile };
+const { ROLE_PERMISSIONS } = require('../constants');
+
+function getPermissions(role) {
+  const perms = ROLE_PERMISSIONS[role];
+  if (!perms) return [];
+  if (perms.includes('*')) {
+    // 展开所有权限点
+    const { PERMISSIONS } = require('../constants');
+    const all = [];
+    for (const mod of Object.values(PERMISSIONS)) {
+      for (const p of Object.values(mod)) {
+        all.push(p);
+      }
+    }
+    return all;
+  }
+  return perms;
+}
+
+module.exports = { register, login, getMe, changePassword, updateProfile, getPermissions };

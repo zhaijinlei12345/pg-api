@@ -50,4 +50,13 @@ async function updateProfile(req, res, next) {
   }
 }
 
-module.exports = { register, login, getMe, changePassword, updateProfile };
+async function getPermissions(req, res, next) {
+  try {
+    const result = authService.getPermissions(req.user.role);
+    return success(res, { role: req.user.role, permissions: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { register, login, getMe, changePassword, updateProfile, getPermissions };

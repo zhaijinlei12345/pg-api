@@ -2,9 +2,9 @@ const express = require('express');
 const { body, param } = require('express-validator');
 const { validate } = require('../middleware/validate');
 const { authenticate } = require('../middleware/auth');
-const { requireRole } = require('../middleware/requireRole');
+const { requirePermission } = require('../middleware/requirePermission');
 const dictController = require('../controllers/dict.controller');
-const { ROLES } = require('../constants');
+const { PERMISSIONS } = require('../constants');
 
 const router = express.Router();
 
@@ -34,7 +34,7 @@ router.get('/dict-types', dictController.listTypes);
 router.post(
   '/dict-types',
   authenticate,
-  requireRole(ROLES.ADMIN),
+  requirePermission(PERMISSIONS.DICT.MANAGE),
   [
     body('code').notEmpty().matches(/^[a-z_]+$/).withMessage('code 须为小写字母+下划线'),
     body('name').notEmpty().withMessage('名称不能为空'),
@@ -55,7 +55,7 @@ router.get('/dict-types/:code', dictController.getType);
 router.put(
   '/dict-types/:code',
   authenticate,
-  requireRole(ROLES.ADMIN),
+  requirePermission(PERMISSIONS.DICT.MANAGE),
   [
     body('name').optional().notEmpty(),
     validate,
@@ -66,7 +66,7 @@ router.put(
 router.delete(
   '/dict-types/:code',
   authenticate,
-  requireRole(ROLES.ADMIN),
+  requirePermission(PERMISSIONS.DICT.MANAGE),
   dictController.deleteType
 );
 
@@ -84,7 +84,7 @@ router.get('/dict-types/:code/entries', dictController.listEntries);
 router.post(
   '/dict-types/:code/entries',
   authenticate,
-  requireRole(ROLES.ADMIN),
+  requirePermission(PERMISSIONS.DICT.MANAGE),
   [
     body('key').notEmpty().withMessage('key 不能为空'),
     body('label').notEmpty().withMessage('显示名不能为空'),
@@ -96,14 +96,14 @@ router.post(
 router.put(
   '/dict-types/:code/entries/:key',
   authenticate,
-  requireRole(ROLES.ADMIN),
+  requirePermission(PERMISSIONS.DICT.MANAGE),
   dictController.updateEntry
 );
 
 router.delete(
   '/dict-types/:code/entries/:key',
   authenticate,
-  requireRole(ROLES.ADMIN),
+  requirePermission(PERMISSIONS.DICT.MANAGE),
   dictController.deleteEntry
 );
 

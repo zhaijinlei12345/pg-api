@@ -2,9 +2,9 @@ const express = require('express');
 const { body, query, param } = require('express-validator');
 const { validate } = require('../middleware/validate');
 const { authenticate } = require('../middleware/auth');
-const { requireRole } = require('../middleware/requireRole');
+const { requirePermission } = require('../middleware/requirePermission');
 const usersController = require('../controllers/users.controller');
-const { ROLES, ALLOWED_USER_SORT_FIELDS } = require('../constants');
+const { PERMISSIONS, ALLOWED_USER_SORT_FIELDS } = require('../constants');
 
 const router = express.Router();
 
@@ -122,7 +122,7 @@ router.get(
 router.post(
   '/',
   authenticate,
-  requireRole(ROLES.ADMIN, ROLES.LEADER),
+  requirePermission(PERMISSIONS.USERS.WRITE),
   [
     body('name').notEmpty().withMessage('姓名不能为空'),
     body('email').isEmail().withMessage('请输入有效的邮箱地址'),
@@ -171,7 +171,7 @@ router.post(
 router.put(
   '/:id',
   authenticate,
-  requireRole(ROLES.ADMIN, ROLES.LEADER),
+  requirePermission(PERMISSIONS.USERS.WRITE),
   [
     param('id').isInt({ min: 1 }).withMessage('id 须为正整数'),
     body('name').optional().notEmpty().withMessage('姓名不能为空'),
@@ -209,7 +209,7 @@ router.put(
 router.delete(
   '/:id',
   authenticate,
-  requireRole(ROLES.ADMIN),
+  requirePermission(PERMISSIONS.USERS.DELETE),
   [
     param('id').isInt({ min: 1 }).withMessage('id 须为正整数'),
     validate,

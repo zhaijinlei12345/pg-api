@@ -2,9 +2,9 @@ const express = require('express');
 const { query } = require('express-validator');
 const { validate } = require('../middleware/validate');
 const { authenticate } = require('../middleware/auth');
-const { requireRole } = require('../middleware/requireRole');
+const { requirePermission } = require('../middleware/requirePermission');
 const auditLogsController = require('../controllers/auditLogs.controller');
-const { ROLES } = require('../constants');
+const { PERMISSIONS } = require('../constants');
 
 const router = express.Router();
 
@@ -41,7 +41,7 @@ const router = express.Router();
 router.get(
   '/',
   authenticate,
-  requireRole(ROLES.ADMIN),
+  requirePermission(PERMISSIONS.AUDIT.READ),
   [
     query('page').optional().isInt({ min: 1 }).withMessage('page 须为正整数'),
     query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('limit 须在 1-100 之间'),

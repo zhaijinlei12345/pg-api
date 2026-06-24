@@ -181,4 +181,15 @@ router.put(
   authController.updateProfile
 );
 
+/**
+ * @swagger
+ * /api/v1/auth/permissions:
+ *   get:
+ *     tags: [Auth]
+ *     summary: 获取当前用户权限列表
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/permissions', authenticate, authController.getPermissions);
+
 module.exports = router;
